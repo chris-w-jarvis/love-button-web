@@ -1,5 +1,4 @@
 require('dotenv').config()
-console.log(process.env.COIN_MKT_CAP_API_KEY)
 var StellarSdk = require('stellar-sdk');
 var rp = require('request-promise')
 StellarSdk.Network.useTestNetwork();
