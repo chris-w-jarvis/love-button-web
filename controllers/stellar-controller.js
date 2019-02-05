@@ -1,3 +1,4 @@
+require('dotenv').config()
 var StellarSdk = require('stellar-sdk');
 var rp = require('request-promise')
 StellarSdk.Network.useTestNetwork();
