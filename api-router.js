@@ -54,7 +54,8 @@ module.exports = function router(app) {
     // zerofill latestPageId
     var idString = `${latestPageId}`
     if (idString.length < 6) {
-      for (i = 0; i < 6-idString.length; i++) {
+      var idLen = idString.length
+      for (i = 0; i < 6-idLen; i++) {
         idString = `0${idString}`
       }
     }

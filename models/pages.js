@@ -22,6 +22,7 @@ const Page = sequelize.define('page', {
   }
 })
 
+// REMOVE TRUE BEFORE LAUNCE, in case I need to restart server don't delete whole db!
 Page.sync({force: true}).then(() => {
   return Page.create({name: "TEST", publicKey: "TESTKEY", url: "TESTURL"})
 })
