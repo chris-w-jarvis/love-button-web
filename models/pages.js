@@ -16,12 +16,14 @@ sequelize
 const Page = sequelize.define('page', {
   name: Sequelize.STRING,
   publicKey: Sequelize.STRING,
+  // put index on this
+  url: Sequelize.STRING,
   id: {type: Sequelize.UUID, primaryKey: true, defaultValue: Sequelize.UUIDV4
   }
 })
 
 Page.sync({force: true}).then(() => {
-  return Page.create({name: "TEST", publicKey: "TESTKEY"})
+  return Page.create({name: "TEST", publicKey: "TESTKEY", url: "TESTURL"})
 })
 
 module.exports = Page

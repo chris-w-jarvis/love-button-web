@@ -17,6 +17,8 @@ stellarPriceCheck()
 // QUERY STELLAR PRICE, run this every 4.9 minutes
 setInterval(stellarPriceCheck, 294000)
 
+var latestPageId = 0
+
 module.exports = function router(app) {
   app.post('/api/sendMoney', function(req, res) {
     console.log(req.body)
@@ -49,8 +51,24 @@ module.exports = function router(app) {
   })
 
   app.post('/api/getMyLink', function(req, res) {
-    Page.findAll().then(pages => {
-      console.log(pages)
+    // zerofill latestPageId
+    var idString = `${latestPageId}`
+    if (idString.length < 6) {
+      for (i = 0; i < 6-idString.length; i++) {
+        idString = `0${idString}`
+      }
+    }
+    latestPageId++
+
+    // db
+    Page.create({name:req.body.name, publicKey:req.body.key, url:idString}).then(
+      (page) => {
+        res.send({id:page.url})
+      }
+    )
+    .catch(err => {
+      console.log(err)
+      res.sendStatus(400)
     })
   })
 }
