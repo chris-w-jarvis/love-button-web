@@ -1,8 +1,24 @@
-const http = require('http')
 const stellarController = require('./controllers/stellar-controller')
+const Page = require('./models/pages')
+
+// value returned by /api/priceCheck
+var stellarPrice = "";
+const stellarPriceCheck = function() {
+  stellarController.priceCheck().then((price) => {
+    stellarPrice = price
+  })
+  .catch((err)  => {
+    console.log(err)
+  })
+}
+
+stellarPriceCheck()
+
+// QUERY STELLAR PRICE, run this every 4.9 minutes
+setInterval(stellarPriceCheck, 294000)
 
 module.exports = function router(app) {
-  app.post('/sendMoney', function(req, res) {
+  app.post('/api/sendMoney', function(req, res) {
     console.log(req.body)
     // DO VALIDATION LOL
     stellarController.sendPayment(req.body.source, req.body.destination, req.body.amount)
@@ -19,18 +35,11 @@ module.exports = function router(app) {
     })
   })
 
-  var stellarPrice = "";
-
-  app.get('/priceCheck', function(req, res) {
-    // stellarController.priceCheck().then((price) => res.send({price:price}))
-    // .catch((err)  => {
-    //   res.sendStatus(404)
-    //   console.log(err)
-    // })
+  app.get('/api/priceCheck', function(req, res) {
     res.send({price:stellarPrice})
   })
 
-  app.post('/accountBalance', function(req, res) {
+  app.post('/api/accountBalance', function(req, res) {
     stellarController.accountBalance(req.body.source)
       .then(balance => res.send({balance: balance}))
       .catch(err => {
@@ -39,22 +48,9 @@ module.exports = function router(app) {
     })
   })
 
-  // REMOVE THIS IN PROD
-  app.get("/uptime", (request, response) => response.sendStatus(200));
-
-  const stellarPriceCheck = function() {
-    stellarController.priceCheck().then((price) => {
-      stellarPrice = price
-      // REMOVE THIS IN PROD
-      http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/uptime`);
+  app.post('/api/getMyLink', function(req, res) {
+    Page.findAll().then(pages => {
+      console.log(pages)
     })
-    .catch((err)  => {
-      console.log(err)
-    })
-  }
-
-  stellarPriceCheck()
-
-  // QUERY STELLAR PRICE AND KEEP GLITCH FROM SLEEPING THIS APP, run this every 4.9 minutes
-  //setInterval(stellarPriceCheck, 294000)
+  })
 }

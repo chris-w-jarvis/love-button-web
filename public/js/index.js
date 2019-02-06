@@ -12,12 +12,12 @@ let defaultPaymentBtn = document.getElementById('defaultPaymentAmountBtn')
 
 
 let stellarLedgerUrl = 'http://testnet.stellarchain.io/tx/'
-
+let host = 'http://localhost:8080/api/'
 let stellarPrice = ''
 
 function checkXLM() {
     xlmPrice.innerText = 'loading'
-    $.get('https://love-button.glitch.me/priceCheck', function(price) {
+    $.get(`${host}priceCheck`, function(price) {
         xlmPrice.innerText = `1 Stellar(XLM) is worth ${price.price} USD`
         stellarPrice = price.price
     })
@@ -52,7 +52,7 @@ function sendPayment(amount) {
         alert("Can't send 0 or negative")
         return
     }
-    $.post({url:'https://love-button.glitch.me/sendMoney',
+    $.post({url:`${host}sendMoney`,
         data:{source: sourceKeyIn.value, destination: destKeyElement.innerHTML, amount: amount},
         success: function(res) {
             alert(`Success, sent ${amount} XLM\nSee this transaction on Stellar public ledger: ${stellarLedgerUrl}${res.hash}`)
@@ -71,7 +71,7 @@ acctBalanceBtn.onclick = function(e) {
     if (acctBalanceDiv.firstChild) acctBalanceDiv.removeChild(acctBalanceDiv.firstChild)
     if (sourceKeyIn.value != '') {
         $.post({
-            url: 'https://love-button.glitch.me/accountBalance',
+            url: `${host}accountBalance`,
             data: {source: sourceKeyIn.value},
             success: function (balance) {
                 var usd = parseFloat(balance.balance) * parseFloat(stellarPrice)
