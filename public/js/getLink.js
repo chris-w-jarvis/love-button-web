@@ -14,10 +14,10 @@ $( document ).ready(function () {
             alert("Need a name or some text")
             return
         }
-        $.post({url:`${host}/api/getMyLink`,
+        $.post({url:`${host}api/getMyLink`,
             data:request,
             success: function(res) {
-                document.getElementById('link').value = `${host}/pages/${res.id}`
+                document.getElementById('link').value = `${host}pages/${res.id}`
             },
             error: function() {
                 alert('Request failed, try again later, sorry...');
