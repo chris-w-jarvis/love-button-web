@@ -1,5 +1,5 @@
 const stellarController = require('./controllers/stellar-controller')
-const Page = require('./models/pages')
+const Pages = require('./models/pages')
 
 // value returned by /api/priceCheck
 var stellarPrice = "";
@@ -62,9 +62,9 @@ module.exports = function router(app) {
     latestPageId++
 
     // db
-    Page.create({name:req.body.name, publicKey:req.body.key, url:idString}).then(
+    Pages.create({name:req.body.name, publicKey:req.body.key, pageId:idString}).then(
       (page) => {
-        res.send({id:page.url})
+        res.send({id:page.pageId})
       }
     )
     .catch(err => {

@@ -13,20 +13,17 @@ sequelize
     console.error('Unable to connect to the database:', err);
   });
 
-const Page = sequelize.define('page', {
+const Pages = sequelize.define('Pages', {
   name: Sequelize.STRING,
   publicKey: Sequelize.STRING,
   // put index on this
-  url: Sequelize.STRING,
-  id: {type: Sequelize.UUID, primaryKey: true, defaultValue: Sequelize.UUIDV4
-  }
+  pageId: Sequelize.STRING,
+  id: {type: Sequelize.UUID, primaryKey: true, defaultValue: Sequelize.UUIDV4}
 })
 
 // REMOVE TRUE BEFORE LAUNCE, in case I need to restart server don't delete whole db!
-Page.sync({force: true}).then(() => {
-  return Page.create({name: "TEST", publicKey: "TESTKEY", url: "TESTURL"})
-})
+Pages.sync({force: true})
 
-module.exports = Page
+module.exports = Pages
 
 
