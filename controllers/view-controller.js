@@ -9,7 +9,11 @@ fs.readFile('/app/views/sendMoneyPage.html', 'utf8', function(err, data) {htmlTe
 
 module.exports = function(req, res, next) {
   // find corresponding public key in db for req.params.pageId
-  Pages.findOne({pageId:req.params.pageId}).then(
+  Pages.findOne({
+    where: {
+      pageId: req.params.pageId
+    }
+  }).then(
     (page) => res.send(Mustache.render(htmlTemplate, {key:page.publicKey, name:page.name}))
   )
   .catch(
