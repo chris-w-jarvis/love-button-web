@@ -38,10 +38,12 @@ module.exports = function router(app) {
   })
 
   app.get('/api/priceCheck', function(req, res) {
+    console.log(req.body)
     res.send({price:stellarPrice})
   })
 
   app.post('/api/accountBalance', function(req, res) {
+    console.log(req.body)
     stellarController.accountBalance(req.body.source)
       .then(balance => res.send({balance: balance}))
       .catch(err => {
@@ -51,6 +53,7 @@ module.exports = function router(app) {
   })
 
   app.post('/api/getMyLink', function(req, res) {
+    console.log(req.body)
     // zerofill latestPageId
     var idString = `${latestPageId}`
     if (idString.length < 6) {
