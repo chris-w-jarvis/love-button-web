@@ -14,7 +14,10 @@ module.exports = function(req, res, next) {
       pageId: req.params.pageId
     }
   }).then(
-    (page) => res.send(Mustache.render(htmlTemplate, {key:page.publicKey, name:page.name}))
+    (page) => {
+      console.log(page)
+      res.send(Mustache.render(htmlTemplate, {key:page.publicKey, name:page.name}))
+    }
   )
   .catch(
     (err) => {
