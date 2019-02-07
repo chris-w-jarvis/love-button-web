@@ -5,12 +5,12 @@ $( document ).ready(function () {
 
     getLinkBtn.onclick = function() {
         var request = {}
-        if (document.getElementById("publicKey").value != '') request['key'] = document.getElementById("publicKey").val
+        if (document.getElementById("publicKey").value != '') request['key'] = document.getElementById("publicKey").value
         else {
             alert("Need public key")
             return
         }
-        if (document.getElementById("name").value != '') request['name'] = document.getElementById("name").val
+        if (document.getElementById("name").value != '') request['name'] = document.getElementById("name").value
         else {
             alert("Need a name or some text")
             return
