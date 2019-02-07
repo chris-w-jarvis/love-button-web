@@ -15,7 +15,6 @@ module.exports = function(req, res, next) {
     }
   }).then(
     (page) => {
-      //console.log('****\n****\nDB response:\n'+page)
       res.send(Mustache.render(htmlTemplate, {key:page.publicKey, name:page.name}))
     }
   )

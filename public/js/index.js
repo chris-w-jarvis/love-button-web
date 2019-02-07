@@ -12,7 +12,7 @@ let defaultPaymentBtn = document.getElementById('defaultPaymentAmountBtn')
 
 
 let stellarLedgerUrl = 'http://testnet.stellarchain.io/tx/'
-let host = 'http://localhost:8080/api/'
+let host = 'https://love-button-stellar-app.herokuapp.com/api/'
 let stellarPrice = ''
 
 function checkXLM() {
