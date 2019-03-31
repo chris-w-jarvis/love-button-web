@@ -19,6 +19,28 @@ app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
+// Rate limiter
+const rateLimit = require("express-rate-limit")
+const RedisStore = require("rate-limit-redis")
+var Redis = require('ioredis')
+var client = new Redis('/tmp/redis.sock')
+ 
+app.enable("trust proxy"); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+ 
+const generalLimiter = rateLimit(
+  {
+    store: new RedisStore({
+      client: client
+    }),
+    windowMs: 60000, // 1 minute window
+    max: 15, // start blocking after 5 requests
+    message: "You can only hit this service 15 times per minute, this is to prevent money laundering."
+  }
+);
+ 
+//  apply to all requests
+app.use(generalLimiter);
+
 // VIEWS
 app.get('/', function(req, res) {
   res.send('Landing page')

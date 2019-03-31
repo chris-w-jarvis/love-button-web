@@ -38,7 +38,7 @@
 
     <div class="row mb-2">
       <div class="col-6">      
-        <button type="text" id="defaultPaymentAmountBtn" class="col-12 btn btn-danger" title="Change default in options page for this extension">Send 0.02$</button>
+        <button type="text" id="defaultPaymentAmountBtn" class="col-12 btn btn-danger" title="Change default in options page for this extension">Default</button>
       </div>
       <div class="col-6">      
         <button type="button" id="sendPaymentBtn" class="col-12 btn btn-danger">Send Payment</button>
@@ -60,8 +60,29 @@
       </div>
     </div>
 
+    <div id="optionsDiv" style="display:none">
+      <div>
+        <label>Set default amount button</label>
+        <input id="defaultAmt" type="text" placeholder="default amount">
+        <select id="selectedCurrencyDefault">
+          <option value="xlm" selected="selected">XLM</option>
+          <option value="usd">USD (USD val translated to XLM)</option>
+        </select>
+        <button id="defaultBtn" type="text">Save</button>
+      </div>
+
+      <div>
+        <input type="checkbox" id="saveKeyCheckbox" value="saveKey" title="This is for convenience over security, it will be encrypted.">Store my private key in my browser<br>
+      </div>
+
+      <button type="button" id="clearKeyBtn">Clear storage</button>
+    </div>
+
     <footer class="row bg-danger pb-0">
-      <a class="col-12 text-white" href="https://love-button-stellar-app.herokuapp.com/about">About Love Button</a>
+      <span>
+        <a class="col-12 text-white" href="https://love-button-stellar-app.herokuapp.com/about">About Love Button</a>
+        <button id="showOptionsDivBtn" type="button">Show Options</button>
+      </span>
     </footer>
   </div>
   </body>

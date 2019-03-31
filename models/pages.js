@@ -21,8 +21,8 @@ const Pages = sequelize.define('Pages', {
   id: {type: Sequelize.UUID, primaryKey: true, defaultValue: Sequelize.UUIDV4}
 })
 
-// REMOVE TRUE BEFORE LAUNCE, in case I need to restart server don't delete whole db!
-Pages.sync({force: true})
+// to delete db add as argument {force:true}
+Pages.sync()
 
 module.exports = Pages
 

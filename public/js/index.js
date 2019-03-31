@@ -6,13 +6,19 @@ let priceCheckBtn = document.getElementById('priceCheck')
 let acctBalanceBtn = document.getElementById('accountBalanceCheck')
 let acctBalanceDiv = document.getElementById('accountBalanceDiv')
 let selectedCurrency = document.getElementById('selectedCurrency')
+let selectedCurrencyDefault = document.getElementById('selectedCurrencyDefault')
 let paymentAmount = document.getElementById('paymentAmount')
 let publicKeyLabel = document.getElementById('publicKeyLabel')
 let defaultPaymentBtn = document.getElementById('defaultPaymentAmountBtn')
+let saveDefaultPaymentBtn = document.getElementById('defaultBtn')
+let saveKeyInBrowserCheckbox = document.getElementById('saveKeyCheckbox')
+let showOptionsDivBtn = document.getElementById('showOptionsDivBtn')
+let clearKeyBtn = document.getElementById("clearKeyBtn")
 
 
 let stellarLedgerUrl = 'http://testnet.stellarchain.io/tx/'
-let host = 'https://love-button-stellar-app.herokuapp.com/api/'
+//let host = 'https://love-button-stellar-app.herokuapp.com/api/'
+let host = 'http://localhost:8080/api/'
 let stellarPrice = ''
 
 function checkXLM() {
@@ -23,39 +29,78 @@ function checkXLM() {
     })
 }
 
+if (localStorage.getItem("encryptedKey")) {
+    console.log("loaded key")
+    sourceKeyIn.value = "KEY STORED IN BROWSER"
+} else {
+    console.log("no key in localStorage")
+}
+
 checkXLM()
 
-// function loadDefaultBtn() {
-//     return new Promise((resolve, reject) => {
-//         chrome.storage.sync.get(['defaultAmount'], function (res) {
-//             if (res.defaultAmount) {
-//                 var amt = res.defaultAmount
-//                 chrome.storage.sync.get(['defaultCurrency'], function (resCur) {
-//                     if (resCur.defaultCurrency) {
-//                         resolve({defaultAmount: amt, defaultCurrency: resCur.defaultCurrency})
-//                     } else resolve({defaultAmount: '.02', defaultCurrency: 'usd'})
-//                 })
-//             } else resolve({defaultAmount: '.02', defaultCurrency: 'usd'})
-//         })
-//     })
-// }
+function loadDefaultBtn() {
+    const defCur = localStorage.getItem("defaultCurrency")
+    const defAmt = localStorage.getItem("defaultAmt")
+    if (defCur && defAmt) {
+        defaultPaymentBtn.innerHTML = `Default (${defAmt+defCur})`
+    } else {
+        defaultPaymentBtn.innerHTML = "Default (not set)"
+    }
+}
 
-// // set default button
-// loadDefaultBtn().then((defaults) => {
-//     if (defaults.defaultCurrency === 'usd') 
-//         defaultPaymentBtn.innerText = `${parseFloat(defaults.defaultAmount).toFixed(2)}$`
-//     else defaultPaymentBtn.innerText = `${parseFloat(defaults.defaultAmount).toFixed(2)}X`
-// })
+loadDefaultBtn()
+
+defaultPaymentBtn.onclick =  function(e) {
+    const defCur = localStorage.getItem("defaultCurrency")
+    const defAmt = localStorage.getItem("defaultAmt")
+    if (defCur && defAmt) {
+        selectedCurrency.value = defCur
+        paymentAmount.value = defAmt
+    }
+}
+
+saveDefaultPaymentBtn.onclick = function(e) {
+    localStorage.setItem("defaultCurrency", selectedCurrencyDefault.value)
+    localStorage.setItem("defaultAmt", document.getElementById("defaultAmt").value)
+    location.reload()
+}
+
+function validateAmount(amount) {
+    if ((parseFloat(stellarPrice) * amount) <= 5.0) return true
+    return false
+}
+
+showOptionsDivBtn.onclick = function(e) {
+    document.getElementById("optionsDiv").style.display = "block"
+}
+
+clearKeyBtn.onclick = function(e) {
+    localStorage.clear()
+}
 
 function sendPayment(amount) {
     if (amount <= 0) {
         alert("Can't send 0 or negative")
         return
     }
+    if (!validateAmount(amount)) {
+        alert("Max transaction size is 5$, if you want to send more, use the Stellar account viewer")
+        return
+    }
+    const storedKey = localStorage.getItem("encryptedKey")
+    console.log("storeKeyCheckbox: ",saveKeyInBrowserCheckbox.checked)
     $.post({url:`${host}sendMoney`,
-        data:{source: sourceKeyIn.value, destination: destKeyElement.innerHTML, amount: amount},
+        // get key from localStorage if its there
+        data:{source: Boolean(storedKey) ? storedKey : sourceKeyIn.value, destination: destKeyElement.innerHTML, amount: amount,
+            encryptKey: saveKeyInBrowserCheckbox.checked, keyEncrypted: Boolean(storedKey)},
         success: function(res) {
             alert(`Success, sent ${amount} XLM\nSee this transaction on Stellar public ledger: ${stellarLedgerUrl}${res.hash}`)
+            if (res.encryptedKey) {
+                console.log("server sent back an encrypted key, storing it")
+                localStorage.setItem("encryptedKey", res.encryptedKey)
+            } else {
+                console.log("no key sent back with response")
+            }
         },
         error: function() {
             alert('Request failed, check your private key.');
@@ -70,9 +115,10 @@ priceCheckBtn.onclick = function(e) {
 acctBalanceBtn.onclick = function(e) {
     if (acctBalanceDiv.firstChild) acctBalanceDiv.removeChild(acctBalanceDiv.firstChild)
     if (sourceKeyIn.value != '') {
+        var storedKey = localStorage.getItem("encryptedKey")
         $.post({
             url: `${host}accountBalance`,
-            data: {source: sourceKeyIn.value},
+            data: {source: Boolean(storedKey) ? storedKey : sourceKeyIn.value, keyEncrypted: Boolean(storedKey)},
             success: function (balance) {
                 var usd = parseFloat(balance.balance) * parseFloat(stellarPrice)
                 var xlm = parseFloat(balance.balance).toFixed(3)

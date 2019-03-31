@@ -1,4 +1,5 @@
 const stellarController = require('./controllers/stellar-controller')
+const encryptionController = require('./controllers/encryption-controller')
 const Pages = require('./models/pages')
 
 // value returned by /api/priceCheck
@@ -21,13 +22,23 @@ var latestPageId = 0
 
 module.exports = function router(app) {
   app.post('/api/sendMoney', function(req, res) {
-    console.log(req.body)
+    console.log("LOG: api/sendMoney\n",req.body)
+    var decryptedKey
+    if (req.body.keyEncrypted === 'true') {
+      console.log("DECRYPTING KEY")
+      decryptedKey = encryptionController.decryptKeyFromBrowser(req.body.source)
+    }
     // DO VALIDATION LOL
-    stellarController.sendPayment(req.body.source, req.body.destination, req.body.amount)
+    stellarController.sendPayment(decryptedKey ? decryptedKey : req.body.source, req.body.destination, req.body.amount)
     .then((result) => {
        console.log(result)
+       var encryptedKey
+       if (req.body.encryptKey === 'true') {
+         console.log("ENCRYPTING KEY")
+         encryptedKey = encryptionController.encryptKeyForBrowser(req.body.source)
+       }
        res.status(200)
-       res.send({hash:result.hash})
+       res.send({hash:result.hash, encryptedKey:encryptedKey})
       }
     )
     // More informative error handling
@@ -44,7 +55,8 @@ module.exports = function router(app) {
 
   app.post('/api/accountBalance', function(req, res) {
     console.log(req.body)
-    stellarController.accountBalance(req.body.source)
+    // decrypt key if needed
+    stellarController.accountBalance(req.body.keyEncrypted === 'true' ? encryptionController.decryptKeyFromBrowser(req.body.source) : req.body.source)
       .then(balance => res.send({balance: balance}))
       .catch(err => {
         res.sendStatus(404)
