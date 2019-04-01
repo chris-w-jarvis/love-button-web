@@ -1,7 +1,7 @@
 const Mustache = require('mustache')
 const fs = require('fs')
 
-const Pages = require('../models/pages')
+const Pages = require('../models/pages').Pages
 
 // read html file to memory
 var htmlTemplate = '';

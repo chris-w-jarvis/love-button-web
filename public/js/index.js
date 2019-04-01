@@ -13,7 +13,8 @@ let defaultPaymentBtn = document.getElementById('defaultPaymentAmountBtn')
 let saveDefaultPaymentBtn = document.getElementById('defaultBtn')
 let saveKeyInBrowserCheckbox = document.getElementById('saveKeyCheckbox')
 let showOptionsDivBtn = document.getElementById('showOptionsDivBtn')
-let clearKeyBtn = document.getElementById("clearKeyBtn")
+let clearKeyBtn = document.getElementById('clearKeyBtn')
+let paymentStatusDiv = document.getElementById('paymentStatusDiv')
 
 
 let stellarLedgerUrl = 'http://testnet.stellarchain.io/tx/'
@@ -94,7 +95,7 @@ function sendPayment(amount) {
         data:{source: Boolean(storedKey) ? storedKey : sourceKeyIn.value, destination: destKeyElement.innerHTML, amount: amount,
             encryptKey: saveKeyInBrowserCheckbox.checked, keyEncrypted: Boolean(storedKey)},
         success: function(res) {
-            alert(`Success, sent ${amount} XLM\nSee this transaction on Stellar public ledger: ${stellarLedgerUrl}${res.hash}`)
+            paymentStatusDiv.innerHTML = `<p>Success, sent ${amount} XLM\nSee this transaction on Stellar public ledger: ${stellarLedgerUrl}${res.hash}</p>`
             if (res.encryptedKey) {
                 console.log("server sent back an encrypted key, storing it")
                 localStorage.setItem("encryptedKey", res.encryptedKey)

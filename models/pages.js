@@ -21,9 +21,17 @@ const Pages = sequelize.define('Pages', {
   id: {type: Sequelize.UUID, primaryKey: true, defaultValue: Sequelize.UUIDV4}
 })
 
+const LastPageId = sequelize.define('LastPageId', {
+  pageId: {type: Sequelize.STRING, primaryKey: true}
+})
+
 // to delete db add as argument {force:true}
 Pages.sync()
+LastPageId.sync()
 
-module.exports = Pages
+module.exports = {
+  Pages: Pages,
+  LastPageId: LastPageId
+}
 
 

