@@ -33,8 +33,8 @@ const generalLimiter = rateLimit(
       client: client
     }),
     windowMs: 60000, // 1 minute window
-    max: 15, // start blocking after 5 requests
-    message: "You can only hit this service 15 times per minute, this is to prevent money laundering."
+    max: 20, // start blocking after 20 requests
+    message: "You can only hit this service 20 times per minute, this is to prevent money laundering."
   }
 );
  
@@ -43,7 +43,22 @@ app.use(generalLimiter);
 
 // VIEWS
 app.get('/', function(req, res) {
-  res.send('Landing page')
+  res.redirect('/about')
+})
+app.get('/about', function(req, res) {
+  res.redirect('https://love-button.launchaco.com/')
+})
+
+app.get('/getStellarLumens', function(req, res) {
+  res.sendFile(__dirname + '/views/getStellarLumens.html')
+})
+
+app.get('/getStartedCreators', function(req, res) {
+  res.sendFile(__dirname + '/views/getStartedCreators.html')
+})
+
+app.get('/get-my-link/premium', function(req, res) {
+  res.send("Not setup yet, email me at chris.at.love.button@gmail.com , it'll cost 10$")
 })
 
 app.get('/get-my-link', function(request, response) {
