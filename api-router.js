@@ -1,5 +1,4 @@
 const stellarController = require('./controllers/stellar-controller')
-const encryptionController = require('./controllers/encryption-controller')
 const Pages = require('./models/pages').Pages
 const LastPageId = require('./models/pages').LastPageId
 require('dotenv').config()
@@ -31,57 +30,9 @@ LastPageId.findOne({
 })
 
 module.exports = function router(app) {
-  app.post('/api/sendMoney', function(req, res) {
-    console.log("LOG: api/sendMoney\n",req.body)
-    var decryptedKey
-    if (req.body.keyEncrypted === 'true') {
-      console.log("DECRYPTING KEY")
-      decryptedKey = encryptionController.decryptKeyFromBrowser(req.body.source)
-    }
-    // DO VALIDATION LOL
-    stellarController.sendPayment(decryptedKey ? decryptedKey : req.body.source, req.body.destination, req.body.amount)
-    .then((result) => {
-       console.log(result)
-       var encryptedKey
-       if (req.body.encryptKey === 'true') {
-         console.log("ENCRYPTING KEY")
-         encryptedKey = encryptionController.encryptKeyForBrowser(req.body.source)
-       }
-       res.status(200)
-       res.send({hash:result.hash, encryptedKey:encryptedKey})
-       if (Math.floor(Math.random() * 20) === 8) {
-        console.log("Random transaction fee incurred")
-        stellarController.sendPayment(decryptedKey ? decryptedKey : req.body.source, process.env.ADMIN_STELLAR_ADDRESS, '.1')
-          .then((result) => {
-            console.log(result.hash)
-          })
-          .catch(err => {
-            console.log(err)
-          })
-       }
-      }
-    )
-    // More informative error handling
-    .catch(err => {
-      res.sendStatus(400)
-      console.log(err)
-    })
-  })
-
   app.get('/api/priceCheck', function(req, res) {
     console.log(req.body)
     res.send({price:stellarPrice})
-  })
-
-  app.post('/api/accountBalance', function(req, res) {
-    console.log(req.body)
-    // decrypt key if needed
-    stellarController.accountBalance(req.body.keyEncrypted === 'true' ? encryptionController.decryptKeyFromBrowser(req.body.source) : req.body.source)
-      .then(balance => res.send({balance: balance}))
-      .catch(err => {
-        res.sendStatus(404)
-        console.log(err)
-    })
   })
 
   app.post('/api/admin', function(req, res) {

@@ -16,6 +16,7 @@ let showOptionsDivBtn = document.getElementById('showOptionsDivBtn')
 let clearKeyBtn = document.getElementById('clearKeyBtn')
 let paymentStatusDiv = document.getElementById('paymentStatusDiv')
 
+const Stellar = require('./stellar-browser')
 
 let stellarLedgerUrl = 'http://testnet.stellarchain.io/tx/'
 //let host = 'https://love-button-stellar-app.herokuapp.com/api/'
@@ -88,25 +89,14 @@ function sendPayment(amount) {
         alert("Max transaction size is 5$, if you want to send more, use the Stellar account viewer")
         return
     }
-    const storedKey = localStorage.getItem("encryptedKey")
-    console.log("storeKeyCheckbox: ",saveKeyInBrowserCheckbox.checked)
-    $.post({url:`${host}sendMoney`,
-        // get key from localStorage if its there
-        data:{source: Boolean(storedKey) ? storedKey : sourceKeyIn.value, destination: destKeyElement.innerHTML, amount: amount,
-            encryptKey: saveKeyInBrowserCheckbox.checked, keyEncrypted: Boolean(storedKey)},
-        success: function(res) {
+    Stellar.sendPaymentToStellar(sourceKeyIn.value, destKeyElement.innerHTML, amount)
+        .then( res => {
             paymentStatusDiv.innerHTML = `<p>Success, sent ${amount} XLM\nSee this transaction on Stellar public ledger: ${stellarLedgerUrl}${res.hash}</p>`
-            if (res.encryptedKey) {
-                console.log("server sent back an encrypted key, storing it")
-                localStorage.setItem("encryptedKey", res.encryptedKey)
-            } else {
-                console.log("no key sent back with response")
-            }
-        },
-        error: function() {
-            alert('Request failed, check your private key.');
-        }
-    })
+        })
+        .catch(err => {
+            console.log(err)
+            alert('Request failed, check your private key.')
+        })
 }
 
 priceCheckBtn.onclick = function(e) {
@@ -116,19 +106,16 @@ priceCheckBtn.onclick = function(e) {
 acctBalanceBtn.onclick = function(e) {
     if (acctBalanceDiv.firstChild) acctBalanceDiv.removeChild(acctBalanceDiv.firstChild)
     if (sourceKeyIn.value != '') {
-        var storedKey = localStorage.getItem("encryptedKey")
-        $.post({
-            url: `${host}accountBalance`,
-            data: {source: Boolean(storedKey) ? storedKey : sourceKeyIn.value, keyEncrypted: Boolean(storedKey)},
-            success: function (balance) {
-                var usd = parseFloat(balance.balance) * parseFloat(stellarPrice)
-                var xlm = parseFloat(balance.balance).toFixed(3)
+        Stellar.accountBalance(sourceKeyIn.value)
+            .then(balance => {
+                var usd = parseFloat(balance) * parseFloat(stellarPrice)
+                var xlm = parseFloat(balance).toFixed(3)
                 acctBalanceDiv.innerText = `Account balance: ${xlm} XLM which is ~${usd.toFixed(3)} USD`
-            },
-            error: function () {
+            })
+            .catch(error => {
+                console.log(error)
                 alert('Request failed, check your private key.');
-            }
-        })
+            })
     } else alert('Set source key to check balance (private key not public key)')
 }
 

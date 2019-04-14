@@ -17,8 +17,8 @@
     </header>
 
     <div class="row">
-      <label class="input-group-text">Public key: {{key}}:</label>
-      <p id="destKey" class="col-12">{{name}}</p>
+      <label id="destKey" class="input-group-text">{{key}}</label>
+      <p class="col-12">{{name}}</p>
     </div>
 
     <div class="row mb-2">
@@ -32,7 +32,7 @@
         <label class="input-group-text" for="selectedCurrency">Currency</label>
       </div>
       <select id="selectedCurrency" class="custom-select">
-        <option value="xlm" selected="selected">XLM(Stellar Lumens)/option>
+        <option value="xlm" selected="selected">XLM(Stellar Lumens)</option>
         <option value="usd">USD (translated to XLM)</option>
       </select>
       <input type="text" id="paymentAmount" class="col-5 form-control" placeholder="Payment amount">
@@ -94,6 +94,7 @@
     </footer>
   </div>
 </body>
-<script src="../js/index.js"></script>
+<!-- <script src="../js/dist/stellar.js"></script> -->
+<script src="../js/dist/main.js"></script>
 
 </html>
