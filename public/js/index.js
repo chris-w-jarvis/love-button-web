@@ -8,15 +8,16 @@ let acctBalanceDiv = document.getElementById('accountBalanceDiv')
 let selectedCurrency = document.getElementById('selectedCurrency')
 let selectedCurrencyDefault = document.getElementById('selectedCurrencyDefault')
 let paymentAmount = document.getElementById('paymentAmount')
-let publicKeyLabel = document.getElementById('publicKeyLabel')
 let defaultPaymentBtn = document.getElementById('defaultPaymentAmountBtn')
 let saveDefaultPaymentBtn = document.getElementById('defaultBtn')
-let saveKeyInBrowserCheckbox = document.getElementById('saveKeyCheckbox')
 let showOptionsDivBtn = document.getElementById('showOptionsDivBtn')
 let clearKeyBtn = document.getElementById('clearKeyBtn')
 let paymentStatusDiv = document.getElementById('paymentStatusDiv')
+let saveKeyInBrowserBtn = document.getElementById('saveKeyInBrowserBtn')
+let saveKeyPassphraseInput = document.getElementById("saveKeyPassphraseInput")
 
 const Stellar = require('./stellar-browser')
+const Encryption = require('./encryption-browser')
 
 let stellarLedgerUrl = 'http://testnet.stellarchain.io/tx/'
 //let host = 'https://love-button-stellar-app.herokuapp.com/api/'
@@ -33,7 +34,7 @@ function checkXLM() {
 
 if (localStorage.getItem("encryptedKey")) {
     console.log("loaded key")
-    sourceKeyIn.value = "KEY STORED IN BROWSER"
+    sourceKeyIn.placeholder = "Passphrase here, key saved in browser"
 } else {
     console.log("no key in localStorage")
 }
@@ -89,9 +90,16 @@ function sendPayment(amount) {
         alert("Max transaction size is 5$, if you want to send more, use the Stellar account viewer")
         return
     }
-    Stellar.sendPaymentToStellar(sourceKeyIn.value, destKeyElement.innerHTML, amount)
+    var privateKey
+    if (localStorage.getItem("encryptedKey")) {
+        privateKey = Encryption.decryptKeyFromBrowser(localStorage.getItem("encryptedKey"), sourceKeyIn.value)
+    } else {
+        privateKey = sourceKeyIn.value
+    }
+    Stellar.sendPaymentToStellar(privateKey, destKeyElement.innerHTML, amount)
         .then( res => {
             paymentStatusDiv.innerHTML = `<p>Success, sent ${amount} XLM\nSee this transaction on Stellar public ledger: ${stellarLedgerUrl}${res.hash}</p>`
+            paymentStatusDiv.style.backgroundColor = "#28a745";
         })
         .catch(err => {
             console.log(err)
@@ -106,7 +114,13 @@ priceCheckBtn.onclick = function(e) {
 acctBalanceBtn.onclick = function(e) {
     if (acctBalanceDiv.firstChild) acctBalanceDiv.removeChild(acctBalanceDiv.firstChild)
     if (sourceKeyIn.value != '') {
-        Stellar.accountBalance(sourceKeyIn.value)
+        var privateKey
+        if (localStorage.getItem("encryptedKey")) {
+            privateKey = Encryption.decryptKeyFromBrowser(localStorage.getItem("encryptedKey"), sourceKeyIn.value)
+        } else {
+            privateKey = sourceKeyIn.value
+        }
+        Stellar.accountBalance(privateKey)
             .then(balance => {
                 var usd = parseFloat(balance) * parseFloat(stellarPrice)
                 var xlm = parseFloat(balance).toFixed(3)
@@ -119,7 +133,7 @@ acctBalanceBtn.onclick = function(e) {
     } else alert('Set source key to check balance (private key not public key)')
 }
 
-// More detailed error messaging, send error message to user from server (not enough money, etc)
+// TODO: More detailed error messaging
 sendPaymentBtn.onclick = function (e) {
     if (destKeyElement.innerHTML != 'No destination key on this page' && sourceKeyIn.value != '') {
         if (paymentAmount.value.match(/[a-z]/i) || !paymentAmount.value.match(/[0-9]/)) {
@@ -135,3 +149,19 @@ sendPaymentBtn.onclick = function (e) {
         }
     } else alert('Destination key or source key not set')
 }
+
+// ENCRYPTION CONTROLLER
+saveKeyInBrowserBtn.onclick = function(e) {
+    saveKeyPassphraseInput.style.display = "block"
+}
+
+saveKeyPassphraseInput.addEventListener("keyup", function(event) {
+    // on enter
+    if (event.keyCode === 13) {
+        event.preventDefault();
+        localStorage.setItem("encryptedKey", Encryption.encryptKeyForBrowser(sourceKeyIn.value, saveKeyPassphraseInput.value))
+        alert("Encrypted key saved in browser, from now on type your passcode instead of your key, periodically you should "+
+        "set a new passphrase.")
+        location.reload()
+    }
+})
